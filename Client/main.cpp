@@ -1,11 +1,18 @@
-#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <cstring>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <iostream>
-#include <string>
-#include <unistd.h>
+#endif
 
 int main(int argc, char **argv)
 {
@@ -13,6 +20,12 @@ int main(int argc, char **argv)
     {
         std::cout << "Usage " << argv[0] << "<hostname> <port number> " << std::endl;
     }
+
+#ifdef _WIN32
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
+
     int port = atoi(argv[2]);
 
     // TODO: socket
@@ -48,7 +61,12 @@ int main(int argc, char **argv)
     }
 
     // TODO: close
+#ifdef _WIN32
+    closesocket(clientSocket);
+    WSACleanup();
+#else
     close(clientSocket);
+#endif
 
     return 0;
 }
