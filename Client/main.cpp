@@ -41,7 +41,8 @@ int main(int argc, char **argv)
     memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    // serverAddress.sin_addr.s_addr = INADDR_ANY;
+    memcpy(&serverAddress.sin_addr.s_addr, server->h_addr, server->h_length);
 
     // TODO: connect
     int connectVal = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
