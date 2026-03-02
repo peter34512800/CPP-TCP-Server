@@ -7,6 +7,35 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <thread>
+
+void processClient(int clientSocket, std::string clientIP, int clientPort)
+{
+    // TODO: read/recv
+    char buffer[1024] = {0};
+    int bytsRecv = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytsRecv < 0)
+    {
+        perror("Could not rceive");
+    }
+
+    if (bytsRecv == 0)
+    {
+        std::cout << "Client at " << clientIP << ":" << clientPort << " has disconnected" << std::endl;
+    }
+
+    std::cout << "Client message: " << buffer << std::endl;
+
+    // TODO: write
+    std::string res = "Server received message from client at " + clientIP + ":" + std::to_string(clientPort);
+    int bytesSent = send(clientSocket, res.c_str(), res.length(), 0);
+    if (bytesSent < 0)
+    {
+        perror("Could not send");
+    }
+
+    close(clientSocket);
+}
 
 int main(int argc, char **argv)
 {
@@ -66,29 +95,10 @@ int main(int argc, char **argv)
         std::cout << "Accepted new client @" << clientIP << ":" << clientPort << std::endl;
 
         // TODO: read/recv
-        char buffer[1024] = {0};
-        int bytsRecv = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytsRecv < 0)
-        {
-            perror("Could not reeive");
-            return 1;
-        }
-
-        if (bytsRecv == 0)
-        {
-            std::cout << "Client at " << clientIP << ":" << clientPort << " has disconnected" << std::endl;
-        }
-
-        std::cout << "Client message: " << buffer << std::endl;
 
         // TODO: write
-        std::string res = "Server received message from client at " + clientIP + ":" + std::to_string(clientPort);
-        int bytesSent = send(clientSocket, res.c_str(), res.length(), 0);
-        if (bytesSent < 0)
-        {
-            perror("Could not send");
-            return 1;
-        }
+        std::thread t(processClient, clientSocket, clientIP, clientPort);
+        t.detach();
     }
 
     // TODO: close
